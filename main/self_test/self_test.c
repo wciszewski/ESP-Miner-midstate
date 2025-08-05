@@ -375,6 +375,8 @@ bool self_test(void * pvParameters)
     notify_message.version = 0x20000004;
     notify_message.target = 0x1705ae3a;
     notify_message.ntime = 0x647025b5;
+    notify_message.midstate_override = NULL;
+    notify_message.merkle_root_last_4_bytes = NULL;
 
     const char * coinbase_tx = "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4b0389130cfab"
                                "e6d6d5cbab26a2599e92916edec"

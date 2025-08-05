@@ -81,7 +81,6 @@ bm_job construct_bm_job(mining_notify *params, const char *merkle_root, const ui
         flip32bytes(new_job.midstate, midstate_override_bin);
         reverse_bytes(new_job.midstate, 32);
 
-        /// XXX we pass the same midstate 4 times, but mining seems not to work if we don't use job.midstate1-3
         if (version_mask != 0) {
             memcpy(new_job.midstate1, new_job.midstate, 32);
             memcpy(new_job.midstate2, new_job.midstate, 32);
