@@ -42,6 +42,7 @@ typedef struct
     uint32_t target;
     uint32_t ntime;
     char *midstate_override;
+    char *merkle_root_last_4_bytes;
 } mining_notify;
 
 typedef struct

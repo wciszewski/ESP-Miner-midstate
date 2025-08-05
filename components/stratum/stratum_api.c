@@ -297,10 +297,12 @@ void STRATUM_V1_parse(StratumApiV1Message * message, const char * stratum_json)
 
         // params can be varible length
         int paramsLength = cJSON_GetArraySize(params);
-        if (paramsLength > 9) {
+        if (paramsLength > 10) {
             new_work->midstate_override = strdup(cJSON_GetArrayItem(params, 8)->valuestring);
+            new_work->merkle_root_last_4_bytes = strdup(cJSON_GetArrayItem(params, 9)->valuestring);
         } else {
             new_work->midstate_override = NULL;
+            new_work->merkle_root_last_4_bytes = NULL;
         }
 
         message->mining_notification = new_work;
@@ -334,6 +336,7 @@ void STRATUM_V1_free_mining_notify(mining_notify * params)
     free(params->coinbase_2);
     free(params->merkle_branches);
     free(params->midstate_override);
+    free(params->merkle_root_last_4_bytes);
     free(params);
 }
 

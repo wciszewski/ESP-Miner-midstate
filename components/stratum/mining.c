@@ -73,7 +73,7 @@ bm_job construct_bm_job(mining_notify *params, const char *merkle_root, const ui
     hex2bin(params->prev_block_hash, new_job.prev_block_hash_be, 32);
     reverse_bytes(new_job.prev_block_hash_be, 32);
 
-    if (params->midstate_override != NULL) {
+    if (params->midstate_override != NULL && params->merkle_root_last_4_bytes != NULL) {
         uint8_t midstate_override_bin[32];
 
         hex2bin(params->midstate_override, midstate_override_bin, 32);
@@ -90,6 +90,8 @@ bm_job construct_bm_job(mining_notify *params, const char *merkle_root, const ui
         } else {
             new_job.num_midstates = 1;
         }
+
+        hex2bin(params->merkle_root_last_4_bytes, new_job.merkle_root + 28, 4);
     } else {
         ////make the midstate hash
         uint8_t midstate_data[64];
