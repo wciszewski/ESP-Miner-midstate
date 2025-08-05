@@ -295,10 +295,16 @@ void STRATUM_V1_parse(StratumApiV1Message * message, const char * stratum_json)
         new_work->target = strtoul(cJSON_GetArrayItem(params, 6)->valuestring, NULL, 16);
         new_work->ntime = strtoul(cJSON_GetArrayItem(params, 7)->valuestring, NULL, 16);
 
-        message->mining_notification = new_work;
-
         // params can be varible length
         int paramsLength = cJSON_GetArraySize(params);
+        if (paramsLength > 9) {
+            new_work->midstate_override = strdup(cJSON_GetArrayItem(params, 8)->valuestring);
+        } else {
+            new_work->midstate_override = NULL;
+        }
+
+        message->mining_notification = new_work;
+
         int value = cJSON_IsTrue(cJSON_GetArrayItem(params, paramsLength - 1));
         message->should_abandon_work = value;
     } else if (message->method == MINING_SET_DIFFICULTY) {
@@ -327,6 +333,7 @@ void STRATUM_V1_free_mining_notify(mining_notify * params)
     free(params->coinbase_1);
     free(params->coinbase_2);
     free(params->merkle_branches);
+    free(params->midstate_override);
     free(params);
 }
 

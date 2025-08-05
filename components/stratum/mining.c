@@ -73,38 +73,49 @@ bm_job construct_bm_job(mining_notify *params, const char *merkle_root, const ui
     hex2bin(params->prev_block_hash, new_job.prev_block_hash_be, 32);
     reverse_bytes(new_job.prev_block_hash_be, 32);
 
-    ////make the midstate hash
-    uint8_t midstate_data[64];
+    if (params->midstate_override != NULL) {
+        uint8_t midstate_override_bin[32];
 
-    // copy 68 bytes header data into midstate (and deal with endianess)
-    memcpy(midstate_data, &new_job.version, 4);             // copy version
-    memcpy(midstate_data + 4, new_job.prev_block_hash, 32); // copy prev_block_hash
-    memcpy(midstate_data + 36, new_job.merkle_root, 28);    // copy merkle_root
+        hex2bin(params->midstate_override, midstate_override_bin, 32);
 
-    midstate_sha256_bin(midstate_data, 64, new_job.midstate); // make the midstate hash
-    reverse_bytes(new_job.midstate, 32);                      // reverse the midstate bytes for the BM job packet
+        flip32bytes(new_job.midstate, midstate_override_bin);
+        reverse_bytes(new_job.midstate, 32);
 
-    if (version_mask != 0)
-    {
-        uint32_t rolled_version = increment_bitmask(new_job.version, version_mask);
-        memcpy(midstate_data, &rolled_version, 4);
-        midstate_sha256_bin(midstate_data, 64, new_job.midstate1);
-        reverse_bytes(new_job.midstate1, 32);
-
-        rolled_version = increment_bitmask(rolled_version, version_mask);
-        memcpy(midstate_data, &rolled_version, 4);
-        midstate_sha256_bin(midstate_data, 64, new_job.midstate2);
-        reverse_bytes(new_job.midstate2, 32);
-
-        rolled_version = increment_bitmask(rolled_version, version_mask);
-        memcpy(midstate_data, &rolled_version, 4);
-        midstate_sha256_bin(midstate_data, 64, new_job.midstate3);
-        reverse_bytes(new_job.midstate3, 32);
-        new_job.num_midstates = 4;
-    }
-    else
-    {
         new_job.num_midstates = 1;
+    } else {
+        ////make the midstate hash
+        uint8_t midstate_data[64];
+
+        // copy 68 bytes header data into midstate (and deal with endianess)
+        memcpy(midstate_data, &new_job.version, 4);             // copy version
+        memcpy(midstate_data + 4, new_job.prev_block_hash, 32); // copy prev_block_hash
+        memcpy(midstate_data + 36, new_job.merkle_root, 28);    // copy merkle_root
+
+        midstate_sha256_bin(midstate_data, 64, new_job.midstate); // make the midstate hash
+        reverse_bytes(new_job.midstate, 32);                      // reverse the midstate bytes for the BM job packet
+
+        if (version_mask != 0)
+        {
+            uint32_t rolled_version = increment_bitmask(new_job.version, version_mask);
+            memcpy(midstate_data, &rolled_version, 4);
+            midstate_sha256_bin(midstate_data, 64, new_job.midstate1);
+            reverse_bytes(new_job.midstate1, 32);
+
+            rolled_version = increment_bitmask(rolled_version, version_mask);
+            memcpy(midstate_data, &rolled_version, 4);
+            midstate_sha256_bin(midstate_data, 64, new_job.midstate2);
+            reverse_bytes(new_job.midstate2, 32);
+
+            rolled_version = increment_bitmask(rolled_version, version_mask);
+            memcpy(midstate_data, &rolled_version, 4);
+            midstate_sha256_bin(midstate_data, 64, new_job.midstate3);
+            reverse_bytes(new_job.midstate3, 32);
+            new_job.num_midstates = 4;
+        }
+        else
+        {
+            new_job.num_midstates = 1;
+        }
     }
 
     return new_job;

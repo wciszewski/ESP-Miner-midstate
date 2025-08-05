@@ -41,6 +41,7 @@ typedef struct
     uint32_t version;
     uint32_t target;
     uint32_t ntime;
+    char *midstate_override;
 } mining_notify;
 
 typedef struct
