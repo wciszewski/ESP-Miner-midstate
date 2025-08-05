@@ -149,7 +149,7 @@ TEST_CASE("Test nonce diff checking", "[mining test_nonce][not-on-qemu]")
     bm_job job = construct_bm_job(&notify_message, merkle_root, 0, 1000);
 
     uint32_t nonce = 0x276E8947;
-    double diff = test_nonce_value(&job, nonce, 0);
+    double diff = test_nonce_value(&job, nonce, 0, NULL);
     TEST_ASSERT_EQUAL_INT(18, (int)diff);
 }
 
@@ -185,6 +185,6 @@ TEST_CASE("Test nonce diff checking 2", "[mining test_nonce][not-on-qemu]")
     bm_job job = construct_bm_job(&notify_message, merkle_root, 0, 1000);
 
     uint32_t nonce = 0x0a029ed1;
-    double diff = test_nonce_value(&job, nonce, 0);
+    double diff = test_nonce_value(&job, nonce, 0, NULL);
     TEST_ASSERT_EQUAL_INT(683, (int)diff);
 }

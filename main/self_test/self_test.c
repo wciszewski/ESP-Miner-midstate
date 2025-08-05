@@ -426,7 +426,7 @@ bool self_test(void * pvParameters)
         task_result * asic_result = ASIC_process_work(GLOBAL_STATE);
         if (asic_result != NULL) {
             // check the nonce difficulty
-            double nonce_diff = test_nonce_value(&job, asic_result->nonce, asic_result->rolled_version);
+            double nonce_diff = test_nonce_value(&job, asic_result->nonce, asic_result->rolled_version, asic_result->midstate);
             sum += difficulty_mask;
             
             hash_rate = (sum * 4294967296) / (duration * 1000000000);

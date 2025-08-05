@@ -33,3 +33,5 @@ managed_components/*
 # System files
 .DS_Store
 Thumbs.db
+
+/venv/

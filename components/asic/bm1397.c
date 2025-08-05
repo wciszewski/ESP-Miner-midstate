@@ -389,6 +389,21 @@ task_result *BM1397_process_work(void *pvParameters)
         rolled_version = increment_bitmask(rolled_version, GLOBAL_STATE->ASIC_TASK_MODULE.active_jobs[rx_job_id]->version_mask);
     }
 
+    switch (rx_midstate_index) {
+        case 0:
+            result.midstate = GLOBAL_STATE->ASIC_TASK_MODULE.active_jobs[rx_job_id]->midstate;
+            break;
+        case 1:
+            result.midstate = GLOBAL_STATE->ASIC_TASK_MODULE.active_jobs[rx_job_id]->midstate1;
+            break;
+        case 2:
+            result.midstate = GLOBAL_STATE->ASIC_TASK_MODULE.active_jobs[rx_job_id]->midstate2;
+            break;
+        case 3:
+            result.midstate = GLOBAL_STATE->ASIC_TASK_MODULE.active_jobs[rx_job_id]->midstate3;
+            break;
+    }
+
     // ASIC may return the same nonce multiple times
     // or one that was already found
     // most of the time it behavies however

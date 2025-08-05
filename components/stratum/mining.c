@@ -81,7 +81,15 @@ bm_job construct_bm_job(mining_notify *params, const char *merkle_root, const ui
         flip32bytes(new_job.midstate, midstate_override_bin);
         reverse_bytes(new_job.midstate, 32);
 
-        new_job.num_midstates = 1;
+        /// XXX we pass the same midstate 4 times, but mining seems not to work if we don't use job.midstate1-3
+        if (version_mask != 0) {
+            memcpy(new_job.midstate1, new_job.midstate, 32);
+            memcpy(new_job.midstate2, new_job.midstate, 32);
+            memcpy(new_job.midstate3, new_job.midstate, 32);
+            new_job.num_midstates = 4;
+        } else {
+            new_job.num_midstates = 1;
+        }
     } else {
         ////make the midstate hash
         uint8_t midstate_data[64];
@@ -140,7 +148,7 @@ char *extranonce_2_generate(uint32_t extranonce_2, uint32_t length)
 static const double truediffone = 26959535291011309493156476344723991336010898738574164086137773096960.0;
 
 /* testing a nonce and return the diff - 0 means invalid */
-double test_nonce_value(const bm_job *job, const uint32_t nonce, const uint32_t rolled_version)
+double test_nonce_value(const bm_job *job, const uint32_t nonce, const uint32_t rolled_version, const uint8_t *midstate)
 {
     double d64, s64, ds;
     unsigned char header[80];
@@ -151,20 +159,52 @@ double test_nonce_value(const bm_job *job, const uint32_t nonce, const uint32_t 
     //     rolled_version = increment_bitmask(rolled_version, job->version_mask);
     // }
 
-    // copy data from job to header
-    memcpy(header, &rolled_version, 4);
-    memcpy(header + 4, job->prev_block_hash, 32);
-    memcpy(header + 36, job->merkle_root, 32);
-    memcpy(header + 68, &job->ntime, 4);
-    memcpy(header + 72, &job->target, 4);
-    memcpy(header + 76, &nonce, 4);
-
     unsigned char hash_buffer[32];
     unsigned char hash_result[32];
 
-    // double hash the header
-    mbedtls_sha256(header, 80, hash_buffer, 0);
-    mbedtls_sha256(hash_buffer, 32, hash_result, 0);
+    if (midstate != NULL) {
+        mbedtls_sha256_context ctx;
+        uint8_t midstate_tmp[32];
+
+        memcpy(midstate_tmp, midstate, 32);
+        reverse_bytes(midstate_tmp, 32);
+        flip32bytes(ctx.state, midstate_tmp);
+
+        ctx.total[0] = 64;
+        ctx.total[1] = 0;
+
+        ctx.first_block = false;
+
+        ctx.mode = SHA2_256;
+        ctx.sha_state = ESP_SHA256_STATE_IN_PROCESS;
+
+        memcpy(header + 64, job->merkle_root + 28, 4);
+        memcpy(header + 68, &job->ntime, 4);
+        memcpy(header + 72, &job->target, 4);
+        memcpy(header + 76, &nonce, 4);
+
+        mbedtls_sha256_update(&ctx, header + 64, 16);
+
+        mbedtls_sha256_finish(&ctx, hash_buffer);
+
+        mbedtls_sha256(hash_buffer, 32, hash_result, 0);
+
+        // // Calculate midstate
+        // mbedtls_sha256_starts(&midstate, 0);
+        // mbedtls_sha256_update(&midstate, data, 64);
+    } else {
+        // copy data from job to header
+        memcpy(header, &rolled_version, 4);
+        memcpy(header + 4, job->prev_block_hash, 32);
+        memcpy(header + 36, job->merkle_root, 32);
+        memcpy(header + 68, &job->ntime, 4);
+        memcpy(header + 72, &job->target, 4);
+        memcpy(header + 76, &nonce, 4);
+
+        // double hash the header
+        mbedtls_sha256(header, 80, hash_buffer, 0);
+        mbedtls_sha256(hash_buffer, 32, hash_result, 0);
+    }
 
     d64 = truediffone;
     s64 = le256todouble(hash_result);
