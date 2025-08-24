@@ -89,6 +89,42 @@ In order to unlock the Input fields for ASIC Frequency and ASIC Core Voltage you
 - Install nodejs/npm from https://nodejs.org/en/download
 - (Optional) Install the ESP-IDF extension for VSCode from https://marketplace.visualstudio.com/items?itemName=espressif.esp-idf-extension
 
+### Complete Build and Flash Process for Bitaxe Max
+
+This assumes you have installed bitaxetool and the prerequisites as described above.
+
+Depending on how you installed `npm`, ESP-IDF may not see it because it seems to ignore `.bashrc`. As a workaround, ensure that `npm` is added to `PATH` in `.profile`, for example like this:
+```
+if [ -d "$HOME/.nvm/versions/node/v22.18.0/bin" ] ; then
+    PATH="$HOME/.nvm/versions/node/v22.18.0/bin:$PATH"
+fi
+```
+
+To compile the firmware, run the following:
+```bash
+# Only need to do this once in a shell. Change 5.5 to your version of ESP-IDF
+. ~/esp/v5.5/esp-idf/export.sh
+
+# Only need to do this once in the project
+idf.py set-target esp32s3
+
+# Alternatively you can use the "build" button in VSCode
+idf.py build
+
+# This step doesn't seem documented; it was taken from .github/workflows/release-factory.yml
+~/esp/v5.5/esp-idf/components/nvs_flash/nvs_partition_generator/nvs_partition_gen.py generate config-102.cvs config.bin 0x6000
+
+# -c to use the binary config generated above (also taken from the github workflow)
+./merge_bin.sh -c midstate_override.bin
+```
+
+To flash it, connect the Bitaxe Max to your computer via USB and run:
+```bash
+bitaxetool --firmware midstate_override.bin
+```
+
+Below are general building and flashing instructions with some additional information. Note that this fork's modifications are only for Bitaxe Max (with BM1397).
+
 ### Building
 
 At the root of the repository, run:
