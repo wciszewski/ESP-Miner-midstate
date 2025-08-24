@@ -65,8 +65,11 @@ TEST_CASE("Validate bm job construction", "[mining]")
     notify_message.version = 0x20000004;
     notify_message.target = 0x1705dd01;
     notify_message.ntime = 0x64658bd8;
-    notify_message.midstate_override = NULL;
     notify_message.merkle_root_last_4_bytes = NULL;
+    notify_message.midstate_override = NULL;
+    notify_message.midstate_override1 = NULL;
+    notify_message.midstate_override2 = NULL;
+    notify_message.midstate_override3 = NULL;
     const char *merkle_root = "cd1be82132ef0d12053dcece1fa0247fcfdb61d4dbd3eb32ea9ef9b4c604a846";
     bm_job job = construct_bm_job(&notify_message, merkle_root, 0, 1000);
 
@@ -147,8 +150,11 @@ TEST_CASE("Test nonce diff checking", "[mining test_nonce][not-on-qemu]")
     notify_message.version = 0x20000004;
     notify_message.target = 0x1705ae3a;
     notify_message.ntime = 0x646ff1a9;
-    notify_message.midstate_override = NULL;
     notify_message.merkle_root_last_4_bytes = NULL;
+    notify_message.midstate_override = NULL;
+    notify_message.midstate_override1 = NULL;
+    notify_message.midstate_override2 = NULL;
+    notify_message.midstate_override3 = NULL;
     const char *merkle_root = "6d0359c451434605c52a5a9ce074340be47c2c63840731f9edf1db3f26b1cdd9a9f16f64";
     bm_job job = construct_bm_job(&notify_message, merkle_root, 0, 1000);
 
@@ -164,8 +170,11 @@ TEST_CASE("Test nonce diff checking 2", "[mining test_nonce][not-on-qemu]")
     notify_message.version = 0x20000004;
     notify_message.target = 0x1705ae3a;
     notify_message.ntime = 0x647025b5;
-    notify_message.midstate_override = NULL;
     notify_message.merkle_root_last_4_bytes = NULL;
+    notify_message.midstate_override = NULL;
+    notify_message.midstate_override1 = NULL;
+    notify_message.midstate_override2 = NULL;
+    notify_message.midstate_override3 = NULL;
 
     const char *coinbase_tx = "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4b0389130cfabe6d6d5cbab26a2599e92916edec5657a94a0708ddb970f5c45b5d12905085617eff8e010000000000000031650707758de07b010000000000001cfd7038212f736c7573682f000000000379ad0c2a000000001976a9147c154ed1dc59609e3d26abb2df2ea3d587cd8c4188ac00000000000000002c6a4c2952534b424c4f434b3ae725d3994b811572c1f345deb98b56b465ef8e153ecbbd27fa37bf1b005161380000000000000000266a24aa21a9ed63b06a7946b190a3fda1d76165b25c9b883bcc6621b040773050ee2a1bb18f1800000000";
     uint8_t merkles[13][32];

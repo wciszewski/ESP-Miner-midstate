@@ -298,11 +298,20 @@ void STRATUM_V1_parse(StratumApiV1Message * message, const char * stratum_json)
         // params can be varible length
         int paramsLength = cJSON_GetArraySize(params);
         if (paramsLength > 10) {
-            new_work->midstate_override = strdup(cJSON_GetArrayItem(params, 8)->valuestring);
-            new_work->merkle_root_last_4_bytes = strdup(cJSON_GetArrayItem(params, 9)->valuestring);
+            new_work->merkle_root_last_4_bytes = strdup(cJSON_GetArrayItem(params, 8)->valuestring);
+            new_work->midstate_override = strdup(cJSON_GetArrayItem(params, 9)->valuestring);
         } else {
             new_work->midstate_override = NULL;
             new_work->merkle_root_last_4_bytes = NULL;
+        }
+        if (paramsLength > 13) {
+            new_work->midstate_override1 = strdup(cJSON_GetArrayItem(params, 10)->valuestring);
+            new_work->midstate_override2 = strdup(cJSON_GetArrayItem(params, 11)->valuestring);
+            new_work->midstate_override3 = strdup(cJSON_GetArrayItem(params, 12)->valuestring);
+        } else {
+            new_work->midstate_override1 = NULL;
+            new_work->midstate_override2 = NULL;
+            new_work->midstate_override3 = NULL;
         }
 
         message->mining_notification = new_work;
@@ -335,8 +344,11 @@ void STRATUM_V1_free_mining_notify(mining_notify * params)
     free(params->coinbase_1);
     free(params->coinbase_2);
     free(params->merkle_branches);
-    free(params->midstate_override);
     free(params->merkle_root_last_4_bytes);
+    free(params->midstate_override);
+    free(params->midstate_override1);
+    free(params->midstate_override2);
+    free(params->midstate_override3);
     free(params);
 }
 

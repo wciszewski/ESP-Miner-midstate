@@ -51,6 +51,15 @@ char *calculate_merkle_root_hash(const char *coinbase_tx, const uint8_t merkle_b
     return merkle_root_hash;
 }
 
+static void midstate_override_stratum_hex_to_job_bin(uint8_t *job_midstate, char *stratum_hex_midstate_override) {
+    uint8_t midstate_override_bin[32];
+
+    hex2bin(stratum_hex_midstate_override, midstate_override_bin, 32);
+
+    flip32bytes(job_midstate, midstate_override_bin);
+    reverse_bytes(job_midstate, 32);
+}
+
 // take a mining_notify struct with ascii hex strings and convert it to a bm_job struct
 bm_job construct_bm_job(mining_notify *params, const char *merkle_root, const uint32_t version_mask, const uint32_t difficulty)
 {
@@ -74,23 +83,18 @@ bm_job construct_bm_job(mining_notify *params, const char *merkle_root, const ui
     reverse_bytes(new_job.prev_block_hash_be, 32);
 
     if (params->midstate_override != NULL && params->merkle_root_last_4_bytes != NULL) {
-        uint8_t midstate_override_bin[32];
+        hex2bin(params->merkle_root_last_4_bytes, new_job.merkle_root + 28, 4);
 
-        hex2bin(params->midstate_override, midstate_override_bin, 32);
+        midstate_override_stratum_hex_to_job_bin(new_job.midstate, params->midstate_override);
 
-        flip32bytes(new_job.midstate, midstate_override_bin);
-        reverse_bytes(new_job.midstate, 32);
-
-        if (version_mask != 0) {
-            memcpy(new_job.midstate1, new_job.midstate, 32);
-            memcpy(new_job.midstate2, new_job.midstate, 32);
-            memcpy(new_job.midstate3, new_job.midstate, 32);
+        if (params->midstate_override1 != NULL && params->midstate_override2 != NULL && params->midstate_override3 != NULL) {
+            midstate_override_stratum_hex_to_job_bin(new_job.midstate1, params->midstate_override1);
+            midstate_override_stratum_hex_to_job_bin(new_job.midstate2, params->midstate_override2);
+            midstate_override_stratum_hex_to_job_bin(new_job.midstate3, params->midstate_override3);
             new_job.num_midstates = 4;
         } else {
             new_job.num_midstates = 1;
         }
-
-        hex2bin(params->merkle_root_last_4_bytes, new_job.merkle_root + 28, 4);
     } else {
         ////make the midstate hash
         uint8_t midstate_data[64];
