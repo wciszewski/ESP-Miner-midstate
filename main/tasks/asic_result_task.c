@@ -36,7 +36,7 @@ void ASIC_result_task(void *pvParameters)
 
         bm_job *active_job = GLOBAL_STATE->ASIC_TASK_MODULE.active_jobs[job_id];
         // check the nonce difficulty
-        double nonce_diff = test_nonce_value(active_job, asic_result->nonce, asic_result->rolled_version, active_job->midstate);
+        double nonce_diff = test_nonce_value(active_job, asic_result->nonce, asic_result->rolled_version, asic_result->midstate);
 
         //log the ASIC response
         ESP_LOGI(TAG, "ID: %s, ver: %08" PRIX32 " Nonce %08" PRIX32 " diff %.1f of %ld.", active_job->jobid, asic_result->rolled_version, asic_result->nonce, nonce_diff, active_job->pool_diff);
