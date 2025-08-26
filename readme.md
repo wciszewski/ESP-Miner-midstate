@@ -1,3 +1,9 @@
+# About This Fork
+
+This fork allows to pass an externally computed midstate to the Bitaxe Max. The midstate is the internal state of SHA-256 after updating it with the first 512 bits of the block header.
+
+Below is the original readme of ESP-Miner with additional complete instructions for building and flashing the firmware for Bitaxe Max.
+
 [![](https://dcbadge.vercel.app/api/server/3E8ca2dkcC)](https://discord.gg/osmu)
 
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/bitaxeorg/esp-miner/total)
