@@ -31,7 +31,10 @@ void create_jobs_task(void *pvParameters)
             continue;
         }
 
-        ESP_LOGI(TAG, "New Work Dequeued %s", mining_notification->job_id);
+        // Do not log if there is midstate override, as this would mean logging for each extranonce_2
+        if (mining_notification->midstate_override == NULL) {
+            ESP_LOGI(TAG, "New Work Dequeued %s", mining_notification->job_id);
+        }
 
         if (GLOBAL_STATE->new_set_mining_difficulty_msg)
         {
@@ -53,8 +56,13 @@ void create_jobs_task(void *pvParameters)
             {
                 generate_work(GLOBAL_STATE, mining_notification, extranonce_2, difficulty);
 
-                // Increase extranonce_2 for the next job.
-                extranonce_2++;
+                if (mining_notification->midstate_override == NULL) {
+                    // Increase extranonce_2 for the next job.
+                    extranonce_2++;
+                } else {
+                    // We don't increment extranonce_2, because with midstate override it doesn't actually do anything
+                    break;
+                }
             }
             else
             {

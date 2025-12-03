@@ -154,8 +154,6 @@ char * STRATUM_V1_receive_jsonrpc_line(int sockfd)
 
 void STRATUM_V1_parse(StratumApiV1Message * message, const char * stratum_json)
 {
-    ESP_LOGI(TAG, "rx: %s", stratum_json); // debug incoming stratum messages
-
     cJSON * json = cJSON_Parse(stratum_json);
 
     cJSON * id_json = cJSON_GetObjectItem(json, "id");
@@ -173,20 +171,26 @@ void STRATUM_V1_parse(StratumApiV1Message * message, const char * stratum_json)
     if (method_json != NULL && cJSON_IsString(method_json)) {
         if (strcmp("mining.notify", method_json->valuestring) == 0) {
             result = MINING_NOTIFY;
-        } else if (strcmp("mining.set_difficulty", method_json->valuestring) == 0) {
-            result = MINING_SET_DIFFICULTY;
-        } else if (strcmp("mining.set_version_mask", method_json->valuestring) == 0) {
-            result = MINING_SET_VERSION_MASK;
-        } else if (strcmp("mining.set_extranonce", method_json->valuestring) == 0) {
-            result = MINING_SET_EXTRANONCE;
-        } else if (strcmp("client.reconnect", method_json->valuestring) == 0) {
-            result = CLIENT_RECONNECT;
         } else {
-            ESP_LOGI(TAG, "unhandled method in stratum message: %s", stratum_json);
+            ESP_LOGI(TAG, "rx: %s", stratum_json); // debug incoming stratum messages
+
+            if (strcmp("mining.set_difficulty", method_json->valuestring) == 0) {
+                result = MINING_SET_DIFFICULTY;
+            } else if (strcmp("mining.set_version_mask", method_json->valuestring) == 0) {
+                result = MINING_SET_VERSION_MASK;
+            } else if (strcmp("mining.set_extranonce", method_json->valuestring) == 0) {
+                result = MINING_SET_EXTRANONCE;
+            } else if (strcmp("client.reconnect", method_json->valuestring) == 0) {
+                result = CLIENT_RECONNECT;
+            } else {
+                ESP_LOGI(TAG, "unhandled method in stratum message: %s", stratum_json);
+            }
         }
 
     //if there is no method, then it is a result
     } else {
+        ESP_LOGI(TAG, "rx: %s", stratum_json); // debug incoming stratum messages
+
         // parse results
         cJSON * result_json = cJSON_GetObjectItem(json, "result");
         cJSON * error_json = cJSON_GetObjectItem(json, "error");
@@ -318,6 +322,12 @@ void STRATUM_V1_parse(StratumApiV1Message * message, const char * stratum_json)
 
         int value = cJSON_IsTrue(cJSON_GetArrayItem(params, paramsLength - 1));
         message->should_abandon_work = value;
+
+        // Do not log notify messages with midstate override - for them there is a new message for every
+        // extranonce_2, which floods the logs
+        if (new_work->midstate_override == NULL) {
+            ESP_LOGI(TAG, "rx: %s", stratum_json); // debug incoming stratum messages
+        }
     } else if (message->method == MINING_SET_DIFFICULTY) {
         cJSON * params = cJSON_GetObjectItem(json, "params");
         uint32_t difficulty = cJSON_GetArrayItem(params, 0)->valueint;
